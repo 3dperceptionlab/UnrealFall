@@ -1,0 +1,44 @@
+{
+	"avatars": [
+		{
+			"name": "BP_SLFMMetaHuman_man_C_1",
+			"animation": "/Script/Engine.AnimSequence'/Game/Motion/66_A_person_unexpectedly_hits_an_uneven_surface_while_walking__and_falls_to_the_floor'",
+			"skeleton":
+			{
+				"num_bones": 24,
+				"position":
+				{
+					"x": 592.25079056242157,
+					"y": -571.26185774012265,
+					"z": -230
+				},
+				"rotation":
+				{
+					"r": 0,
+					"p": 0,
+					"y": 149.99999961268162
+				}
+			}
+		},
+		{
+			"name": "BP_SLFMMetaHumanCharacter_C_1",
+			"animation": "/Script/Engine.AnimSequence'/Game/Motion/750_A_person_is_sitting_on_the_chair__leans_over_to_pick_something_from_the_floor__and_has_a_fall_to_the_left'",
+			"skeleton":
+			{
+				"num_bones": 24,
+				"position":
+				{
+					"x": 753.85920399999998,
+					"y": -381.292327,
+					"z": -117.36768699999999
+				},
+				"rotation":
+				{
+					"r": 0,
+					"p": 0,
+					"y": 132.20158330282666
+				}
+			}
+		}
+	]
+}

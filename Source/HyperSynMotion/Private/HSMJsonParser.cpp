@@ -16,6 +16,7 @@ HSMJsonParser::~HSMJsonParser()
 
 bool HSMJsonParser::LoadFile(FString JsonFilePath)
 {
+	//UE_LOG(LogTemp, Warning, TEXT("Jsonfilepath: %s"), *JsonFilePath);
 	bool file_loaded = false;
 	FString JsonRaw;
 	file_loaded = FFileHelper::LoadFileToString(JsonRaw, *JsonFilePath);
@@ -29,40 +30,62 @@ bool HSMJsonParser::LoadFile(FString JsonFilePath)
 
 		if (FJsonSerializer::Deserialize(JsonReader, JsonObject) && JsonObject.IsValid())
 		{
-			NumFrames = JsonObject->GetIntegerField("total_frames");
+			//Get sequence data
+
+			//sequence name
 			SequenceName = JsonObject->GetStringField("name");
-			//TotalTime = JsonObject->GetNumberField("total_time");
-			//MeanFramerate = JsonObject->GetNumberField("mean_framerate");
+			
+			//sequence numframes
+			NumFrames = JsonObject->GetIntegerField("total_frames");
+			UE_LOG(LogTemp, Warning, TEXT("NumFrames: %i"), NumFrames);
 
+			//sequence cameras
 			CamerasJsonArray = JsonObject->GetArrayField("cameras");
-			PawnsJsonArray = JsonObject->GetArrayField("skeletons");
-			auto AnimationsJsonArray = JsonObject->GetArrayField("animations");
-			//FramesJsonArray = JsonObject->GetArrayField("frames");
 
+			//sequence avatares
+			auto AvataresJsonArray = JsonObject->GetArrayField("avatars");
 
-
-			TSharedPtr<FJsonObject> CurrentCameraObject;
-			for (int32 i = 0; i < CamerasJsonArray.Num(); ++i)
+			for (int32 i = 0; i < AvataresJsonArray.Num(); ++i)
 			{
-				CurrentCameraObject = CamerasJsonArray[i]->AsObject();
-				CameraNames.Add(CurrentCameraObject->GetStringField("name"));
+				//for each avatar
+				TSharedPtr<FJsonObject> AvatarObject = AvataresJsonArray[i]->AsObject();
+
+				//name
+				auto avatar_name = AvatarObject->GetStringField("name");
+				//animation
+				auto animation_name = AvatarObject->GetStringField("animation");
+				//add animation with asociate pawn
+				AnimationsArray.Add(std::make_pair(animation_name,avatar_name));
+
+				//Skeleton bones, position and rotation
+				auto CurrentSkeleton = AvatarObject->GetObjectField("skeleton");
+				auto sk_pair = std::make_pair(MakeShareable(new FJsonValueObject(CurrentSkeleton)), avatar_name);
+				//add skeleton with asociate pawn
+				PawnsJsonArray.Add(sk_pair);
+
+				TSharedPtr<FJsonObject> CurrentCameraObject;
+				for (int32 j = 0; j < CamerasJsonArray.Num(); ++j)
+				{
+					CurrentCameraObject = CamerasJsonArray[j]->AsObject();
+					CameraNames.Add(CurrentCameraObject->GetStringField("name"));
+				}
+
+				/*TSharedPtr<FJsonObject> CurrentPawnObject;
+				for (int32 j = 0; j < PawnsJsonArray.Num(); ++j)
+				{
+					CurrentPawnObject = PawnsJsonArray[j]->AsObject();
+					PawnNames.Add(CurrentPawnObject->GetStringField("name"));
+				}*/
+				PawnNames.Add(avatar_name);
+
+				/*TSharedPtr<FJsonObject> CurrentAnimationObject;
+				for (int32 j = 0; j < AnimationsJsonArray.Num(); ++j)
+				{
+					CurrentAnimationObject = AnimationsJsonArray[j]->AsObject();
+					AnimationNames.Add(CurrentAnimationObject->GetStringField("name"));
+				}*/
+				AnimationNames.Add(animation_name);
 			}
-
-			TSharedPtr<FJsonObject> CurrentPawnObject;
-			for (int32 i = 0; i < PawnsJsonArray.Num(); ++i)
-			{
-				CurrentPawnObject = PawnsJsonArray[i]->AsObject();
-				PawnNames.Add(CurrentPawnObject->GetStringField("name"));
-			}
-
-			TSharedPtr<FJsonObject> CurrentAnimationObject;
-			for (int32 i = 0; i < AnimationsJsonArray.Num(); ++i)
-			{
-				CurrentAnimationObject = AnimationsJsonArray[i]->AsObject();
-				AnimationNames.Add(CurrentAnimationObject->GetStringField("name"));
-			}
-
-
 		}
 		else
 		{
@@ -74,6 +97,210 @@ bool HSMJsonParser::LoadFile(FString JsonFilePath)
 		UE_LOG(LogTemp, Warning, TEXT("JSON couldn't be read."));
 	}
 
+	return file_loaded;
+}
+
+bool HSMJsonParser::LoadSceneFile(FString JsonFilePath, UObject* hsmtracker)
+{
+	bool file_loaded = false;
+	FString JsonRaw;
+	file_loaded = FFileHelper::LoadFileToString(JsonRaw, *JsonFilePath);
+
+	if (file_loaded)
+	{
+		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
+		TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonRaw);
+
+		if (FJsonSerializer::Deserialize(JsonReader, JsonObject) && JsonObject.IsValid())
+		{
+			// Extract the name of the blueprint
+			FString BlueprintPath = JsonObject->GetObjectField("scene")->GetStringField("name");
+
+			// Load the Blueprint class
+			UObject* BlueprintObj = StaticLoadObject(UObject::StaticClass(), nullptr, *BlueprintPath);
+
+			if (BlueprintObj)
+			{
+				UBlueprint* Blueprint = Cast<UBlueprint>(BlueprintObj);
+				if (Blueprint && Blueprint->GeneratedClass)
+				{
+					UClass* SpawnClass = Blueprint->GeneratedClass;
+
+					//Get World
+					UWorld* world = GEngine->GetWorldFromContextObjectChecked(hsmtracker);
+					if (world)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Scene charged corretly with world context!"));
+						// Extract position, scale, and rotation from JSON
+						FVector Position = FVector(
+							JsonObject->GetObjectField("scene")->GetObjectField("position")->GetNumberField("x"),
+							JsonObject->GetObjectField("scene")->GetObjectField("position")->GetNumberField("y"),
+							JsonObject->GetObjectField("scene")->GetObjectField("position")->GetNumberField("z")
+						);
+
+						FVector Scale = FVector(
+							JsonObject->GetObjectField("scene")->GetObjectField("scale")->GetNumberField("x"),
+							JsonObject->GetObjectField("scene")->GetObjectField("scale")->GetNumberField("y"),
+							JsonObject->GetObjectField("scene")->GetObjectField("scale")->GetNumberField("z")
+						);
+
+						FRotator Rotation = FRotator(
+							JsonObject->GetObjectField("scene")->GetObjectField("rotation")->GetNumberField("x"),
+							JsonObject->GetObjectField("scene")->GetObjectField("rotation")->GetNumberField("y"),
+							JsonObject->GetObjectField("scene")->GetObjectField("rotation")->GetNumberField("z")
+						);
+
+						// Spawn the actor in the world
+						FActorSpawnParameters SpawnParams;
+						AActor* SpawnedActor = world->SpawnActor<AActor>(SpawnClass, Position, Rotation, SpawnParams);
+						if (SpawnedActor)
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Actor spawned successfully!"));
+
+							// Set scale
+							SpawnedActor->SetActorScale3D(Scale);
+
+							//<ONLY FOR DEBUG---------------------------------------------------------------------------------------->
+							// obtein actor class to print components and properties
+							UClass* ActorClass = SpawnedActor->GetClass();
+							TSet<UActorComponent*> Components = SpawnedActor->GetComponents();
+							for (UActorComponent* Component : Components)
+							{
+								if (Component)
+								{
+									// print name and component type
+									UE_LOG(LogTemp, Warning, TEXT("Component Name: %s, Component Class: %s"),
+										*Component->GetName(),
+										*Component->GetClass()->GetName());
+									// obtein component class
+									UClass* ComponentClass = Component->GetClass();
+
+									// loop properties
+									for (TFieldIterator<FProperty> PropIt(ComponentClass); PropIt; ++PropIt)
+									{
+										FProperty* Property = *PropIt;
+										FString PropertyName = Property->GetName();
+										FString PropertyValue;
+
+										// get propertie value in string 
+										Property->ExportText_InContainer(0, PropertyValue, Component, Component, Component, PPF_None);
+
+										// print name and value
+										UE_LOG(LogTemp, Warning, TEXT("    Property Name: %s, Property Value: %s"),
+											*PropertyName,
+											*PropertyValue);
+									}
+								}
+							}
+							//print ActorClass properties -> hear are crop properties located
+							for (TFieldIterator<FProperty> PropIt(ActorClass); PropIt; ++PropIt)
+							{
+								FProperty* Property = *PropIt;
+								if (Property) {
+									// Obtener el nombre de la propiedad
+									FString PropertyName = Property->GetName();
+									UE_LOG(LogTemp, Warning, TEXT("property: %s"), *PropertyName);
+								}
+							}
+							//<ONLY FOR DEBUG---------------------------------------------------------------------------------------->
+
+							/*int32 properties = SpawnedActor->GetClass()->PropertiesSize;
+							UE_LOG(LogTemp, Warning, TEXT("num properties: %i"), properties);*/
+
+							// get crop properties by name
+							FProperty* CropMin = SpawnedActor->GetClass()->FindPropertyByName("CropMin");
+							FProperty* CropMax = SpawnedActor->GetClass()->FindPropertyByName("CropMax");
+							FProperty* CropCenter = SpawnedActor->GetClass()->FindPropertyByName("CropCenter");
+							FProperty* CropRotation = SpawnedActor->GetClass()->FindPropertyByName("CropRotation");
+							if (CropMin && CropMax && CropCenter && CropRotation)
+							{
+								//verify if FStructProperty and data structure is FVector
+								if (FStructProperty* StructProp = CastField<FStructProperty>(CropMin))
+								{
+									UE_LOG(LogTemp, Warning, TEXT("property: %s"), *StructProp->Struct->GetFName().ToString());
+									if (StructProp->Struct->GetFName() == "Vector3f")
+									{
+										UE_LOG(LogTemp, Warning, TEXT("Si es un FVEctor3f"));
+									}
+								}
+
+								//Set crop min property
+								FVector3f cropmin_value = FVector3f(
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_box_min")->GetNumberField("x"),
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_box_min")->GetNumberField("y"),
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_box_min")->GetNumberField("z")
+								);
+								void* CropMinAddress = CropMin->ContainerPtrToValuePtr<void>(SpawnedActor);
+								FVector3f* CropMinVector = reinterpret_cast<FVector3f*>(CropMinAddress);
+								*CropMinVector = cropmin_value;
+
+								//Set crop max property
+								FVector3f cropmax_value = FVector3f(
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_box_max")->GetNumberField("x"),
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_box_max")->GetNumberField("y"),
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_box_max")->GetNumberField("z")
+								);
+								void* CropMaxAddress = CropMax->ContainerPtrToValuePtr<void>(SpawnedActor);
+								FVector3f* CropMaxVector = reinterpret_cast<FVector3f*>(CropMaxAddress);
+								*CropMaxVector = cropmax_value;
+
+								//Set crop center property
+								FVector3f cropcenter_value = FVector3f(
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_center")->GetNumberField("x"),
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_center")->GetNumberField("y"),
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_bounding_center")->GetNumberField("z")
+								);
+								void* CropCenterAdress = CropCenter->ContainerPtrToValuePtr<void>(SpawnedActor);
+								FVector3f* CropCenterVector = reinterpret_cast<FVector3f*>(CropCenterAdress);
+								*CropCenterVector = cropcenter_value;
+
+								//Set crop rotation property
+								FRotator3d croprotation_value = FRotator3d(
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_rotation")->GetNumberField("x"),
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_rotation")->GetNumberField("y"),
+									JsonObject->GetObjectField("scene")->GetObjectField("crop_rotation")->GetNumberField("z")
+								);
+								void* CropRotationAddress = CropRotation->ContainerPtrToValuePtr<void>(SpawnedActor);
+								FRotator3d* CropRotationVector = reinterpret_cast<FRotator3d*>(CropRotationAddress);
+								*CropRotationVector = croprotation_value;
+
+								/*SpawnedActor->MarkComponentsRenderStateDirty();
+								SpawnedActor->ReregisterAllComponents();*/
+
+								// Crear y configurar un FPropertyChangedChainEvent
+								/*FEditPropertyChain PropertyChain;
+								PropertyChain.AddHead(CropMin);
+								PropertyChain.SetActivePropertyNode(CropMin);
+
+								FPropertyChangedChainEvent PropertyChangedEvent(PropertyChain);
+								SpawnedActor->PostEditChangeChainProperty(PropertyChangedEvent);*/
+
+								// Reload properties in editor
+								FPropertyChangedEvent PropertyChangedEvent(CropMin);
+								SpawnedActor->PostEditChangeProperty(PropertyChangedEvent);
+								FPropertyChangedEvent PropertyChangedEvent1(CropMax);
+								SpawnedActor->PostEditChangeProperty(PropertyChangedEvent1);
+								FPropertyChangedEvent PropertyChangedEvent2(CropCenter);
+								SpawnedActor->PostEditChangeProperty(PropertyChangedEvent2);
+								FPropertyChangedEvent PropertyChangedEvent3(CropRotation);
+								SpawnedActor->PostEditChangeProperty(PropertyChangedEvent3);
+
+								/*world->GetCurrentLevel()->MarkLevelComponentsRenderStateDirty();
+
+								SpawnedActor->PostInitProperties();
+								SpawnedActor->Reset();
+
+								world->GetCurrentLevel()->ReloadConfig();*/
+								/*MarkComponentsRender*/
+								/*SpawnedActor->ReloadConfig();*/
+								UE_LOG(LogTemp, Warning, TEXT("LLEGO AL FINAL"));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	return file_loaded;
 }
 
@@ -454,9 +681,10 @@ FHSMSkeletonState HSMJsonParser::GetSkeletonState(FString name) const{
 
 	for (int32 i = 0; i < PawnsJsonArray.Num(); ++i)
 	{
-		CurrentPawnObject = PawnsJsonArray[i]->AsObject();
-		if (CurrentPawnObject->GetStringField("name") == name){
-
+		CurrentPawnObject = PawnsJsonArray[i].first->AsObject();
+		if (PawnsJsonArray[i].second == name) {
+			UE_LOG(LogTemp, Warning, TEXT("Pawn in avatares json: %s"), *name);
+		
 			skeletonState.Position = FVector(CurrentPawnObject->GetObjectField("position")->GetNumberField("x"), CurrentPawnObject->GetObjectField("position")->GetNumberField("y"), CurrentPawnObject->GetObjectField("position")->GetNumberField("z"));
 			skeletonState.Rotation = FRotator(CurrentPawnObject->GetObjectField("rotation")->GetNumberField("p"), CurrentPawnObject->GetObjectField("rotation")->GetNumberField("y"), CurrentPawnObject->GetObjectField("rotation")->GetNumberField("r"));
 
@@ -490,27 +718,36 @@ FHSMCameraState HSMJsonParser::GetCameraState(FString name) const {
 			cameraState.Rotation = FRotator(CurrentCameraObject->GetObjectField("rotation")->GetNumberField("p"), CurrentCameraObject->GetObjectField("rotation")->GetNumberField("y"), CurrentCameraObject->GetObjectField("rotation")->GetNumberField("r"));
 			cameraState.fov = CurrentCameraObject->GetNumberField("fov");
 			cameraState.stereo = CurrentCameraObject->GetIntegerField("stereo");
-			auto trajectories = CurrentCameraObject->GetArrayField("trajectory");
-			for (int32 j = 0; j < trajectories.Num(); ++j) {
-				auto trajectory = trajectories[j]->AsObject();
-				cameraState.FilePaths.Add(trajectory->GetStringField("file_path"));
-				/* The tranform is saved in the json like this:
-				"trajectory": [
-				{
-				  "file_path": "images/000001.jpg",
-				  "transform_matrix": [
-					[  0.9999589218549491,  -0.002219130903938475,  0.00878806353634434,  0.463642026769967],[  -0.0022415310802868346,  -0.9999942621984279,  0.002539903273341879,  2.57144443184765],[  0.00878237673433268,  -0.002559497656379054,  -0.9999581585399677,  -3.6562660783391614],[  0.0,  -0.0,  -0.0,  1.0]
-				  ]*/
+			if (CurrentCameraObject->HasField("trajectory")) {
+				auto trajectories = CurrentCameraObject->GetArrayField("trajectory");
+				// if the camera has trajectory
+				for (int32 j = 0; j < trajectories.Num(); ++j) {
+					auto trajectory = trajectories[j]->AsObject();
+					cameraState.FilePaths.Add(trajectory->GetStringField("file_path"));
+					/* The tranform is saved in the json like this:
+					"trajectory": [
+					{
+					  "file_path": "images/000001.jpg",
+					  "transform_matrix": [
+						[  0.9999589218549491,  -0.002219130903938475,  0.00878806353634434,  0.463642026769967],[  -0.0022415310802868346,  -0.9999942621984279,  0.002539903273341879,  2.57144443184765],[  0.00878237673433268,  -0.002559497656379054,  -0.9999581585399677,  -3.6562660783391614],[  0.0,  -0.0,  -0.0,  1.0]
+					  ]*/
 
-				FMatrix transform;
-				auto transform_matrix = trajectory->GetArrayField("transform_matrix");
-				for (int32 k = 0; k < transform_matrix.Num(); ++k) {
-					auto row = transform_matrix[k]->AsArray();
-					for (int32 l = 0; l < row.Num(); ++l) {
-						transform.M[k][l] = row[l]->AsNumber();
+					FMatrix transform;
+					auto transform_matrix = trajectory->GetArrayField("transform_matrix");
+					for (int32 k = 0; k < transform_matrix.Num(); ++k) {
+						auto row = transform_matrix[k]->AsArray();
+						for (int32 l = 0; l < row.Num(); ++l) {
+							transform.M[k][l] = row[l]->AsNumber();
+						}
 					}
+					cameraState.Transforms.Add(transform);
 				}
-				cameraState.Transforms.Add(transform);
+			}
+			else {
+				//no hay trayectoria
+				// Create a transform matrix from Position and Rotation
+				FTransform transform(cameraState.Rotation, cameraState.Position);
+				cameraState.Transforms.Add(transform.ToMatrixWithScale());
 			}
 			
 			break;
@@ -521,3 +758,15 @@ FHSMCameraState HSMJsonParser::GetCameraState(FString name) const {
 	return cameraState;
 
 }
+
+FString HSMJsonParser::GetAnimationName(FString name) const
+{
+	for (auto anim : AnimationsArray)
+	{
+		if (anim.second == name)
+			return anim.first;
+	}
+	return "Pawn not finded";
+}
+
+

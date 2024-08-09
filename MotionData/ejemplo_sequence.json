@@ -1,0 +1,133 @@
+{
+	"name": "Anim Man 1 and Woman 2",
+	"total_frames": 120,
+	"cameras": [
+		{
+			"name": "Camera1",
+			"stereo": 0,
+			"fov": 116.70449829101562,
+			"position":
+			{
+				"x": 540,
+				"y": -290,
+				"z": -100
+			},
+			"rotation":
+			{
+				"r": 0,
+				"p": 0,
+				"y": -59.999999535218009
+			}
+		},
+		{
+			"name": "Camera2",
+			"stereo": 0,
+			"fov": 80.572662353515625,
+			"position":
+			{
+				"x": 875.67422828607005,
+				"y": -676.21363217077192,
+				"z": -94.519226667095722
+			},
+			"rotation":
+			{
+				"r": 0.2504296715188008,
+				"p": -20.330141417729912,
+				"y": 132.50740491931526
+			}
+		},
+		{
+			"name": "Camera3",
+			"stereo": 0,
+			"fov": 94.638389587402344,
+			"position":
+			{
+				"x": 565.10898174154795,
+				"y": -406.56381188657747,
+				"z": -101.93351443349601
+			},
+			"rotation":
+			{
+				"r": 2.2735649999999992,
+				"p": -12.937540000000014,
+				"y": -64.05584199999997
+			}
+		},
+		{
+			"name": "Camera4",
+			"stereo": 0,
+			"fov": 80.572662353515625,
+			"position":
+			{
+				"x": 842.95775790491416,
+				"y": -367.35283377074973,
+				"z": -104.02352058942695
+			},
+			"rotation":
+			{
+				"r": 6.4168123959526229,
+				"p": -17.665846231340371,
+				"y": -179.20987992901885
+			}
+		},
+		{
+			"name": "Camera5",
+			"stereo": 0,
+			"fov": 80.572662353515625,
+			"position":
+			{
+				"x": 410.19999020324178,
+				"y": -373.21907947321756,
+				"z": -116.84219947670304
+			},
+			"rotation":
+			{
+				"r": 0.23577199999999995,
+				"p": -10.158091000000013,
+				"y": -6.3510769999999725
+			}
+		}
+	],
+	"avatars": [
+		{
+			"name": "BP_SLFMMetaHuman_man_1",
+			"animation": "/Script/Engine.AnimSequence'/Game/Motion/66_A_person_unexpectedly_hits_an_uneven_surface_while_walking__and_falls_to_the_floor.66_A_person_unexpectedly_hits_an_uneven_surface_while_walking__and_falls_to_the_floor'",
+			"skeleton":
+			{
+				"num_bones": 24,
+				"position":
+				{
+					"x": 592.25079056242157,
+					"y": -571.26185774012265,
+					"z": -230
+				},
+				"rotation":
+				{
+					"r": 0,
+					"p": 0,
+					"y": 149.99999961268162
+				}
+			}
+		},
+		{
+			"name": "BP_SLFMMetaHuman_man_2",
+			"animation": "/Script/Engine.AnimSequence'/Game/Motion/750_A_person_is_sitting_on_the_chair__leans_over_to_pick_something_from_the_floor__and_has_a_fall_to_the_left.750_A_person_is_sitting_on_the_chair__leans_over_to_pick_something_from_the_floor__and_has_a_fall_to_the_left'",
+			"skeleton":
+			{
+				"num_bones": 24,
+				"position":
+				{
+					"x": 753.85920399999998,
+					"y": -381.292327,
+					"z": -117.36768699999999
+				},
+				"rotation":
+				{
+					"r": 0,
+					"p": 0,
+					"y": 132.20158330282666
+				}
+			}
+		}
+	]
+}

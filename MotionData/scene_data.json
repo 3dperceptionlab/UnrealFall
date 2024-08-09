@@ -1,0 +1,40 @@
+{
+    "scene": {
+        "name": "//Script/Engine.Blueprint'/Game/Scenes/MeetingRoom/Blueprints/MeetingRoom_GaussianSplatLuma.MeetingRoom_GaussianSplatLuma'",
+        "scale": {
+            "x":3.2,
+            "y":3.2,
+            "z":3.2
+        },
+        "position": {
+            "x":640.0,
+            "y":-180.0,
+            "z":30.0
+        },
+        "rotation":{
+            "x":0.0,
+            "y":0.0,
+            "z":0.0
+        },
+        "crop_bounding_box_min": {
+            "x":-0.18,
+            "y":-0.07,
+            "z":-0.12
+        },
+        "crop_bounding_box_max":{
+            "x":0.18,
+            "y":0.05,
+            "z":0.12
+        },
+        "crop_bounding_center": {
+            "x":0.0,
+            "y":0.0,
+            "z":0.0
+        },
+        "crop_rotation":{
+            "x":-0.34,
+            "y":0.0,
+            "z":0.0
+        }
+    }
+}

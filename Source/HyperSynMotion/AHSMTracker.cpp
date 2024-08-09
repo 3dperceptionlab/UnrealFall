@@ -99,6 +99,7 @@ LastFrameTime(0)
 	json_file_names.Add("scene");
 	start_frames.Add(0);
 	scene_save_directory = FPaths::ProjectUserDir();
+	scene_charge_directory = FPaths::ProjectUserDir();
 	screenshots_save_directory = FPaths::ProjectUserDir();
 	absolute_file_path = scene_save_directory + scene_folder + "/" + scene_file_name_prefix + ".txt";
 }
@@ -119,6 +120,7 @@ void AHSMTracker::BeginPlay()
 
 	for (APawn* pawn : Pawns)
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("%s"),*pawn->GetFName().ToString());
 		// pawn->InitFromTracker(bRecordMode, bDebugMode, this); UE4
 		ViewTargets.Add(pawn);
 
@@ -901,10 +903,13 @@ void AHSMTracker::RebuildModeBegin()
 {
 	if (CurrentJsonFile < start_frames.Num())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("MENOR QUE START FRAMESSSSSSSS"));
 		numFrame = start_frames[CurrentJsonFile];
+		UE_LOG(LogTemp, Warning, TEXT("NUMFRAME XD: %i"), numFrame);
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("IGUAL O MAYOR QUE START FRAMESSSSS"));
 		numFrame = 0;
 	}
 
@@ -919,11 +924,19 @@ void AHSMTracker::RebuildModeBegin()
 	JsonParser->LoadFile(scene_save_directory + scene_folder + "/" + json_file_names[CurrentJsonFile] + ".json");
 	//CacheSceneActors(JsonParser->GetPawnNames(), JsonParser->GetCameraNames());
 	DisableGravity();
-
+	
+	// Initialize scene (gaussian splat)
+	if (!scene_charged)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SPAWNEANDO LA ESCENA"));
+		scene_charged = JsonParser->LoadSceneFile(scene_charge_directory + scene_folder + "/" + scene_file_name + ".json",this);
+		//UE_LOG(LogTemp, Warning, TEXT("Scene chargeg value is: %s"), scene_charged ? TEXT("true") : TEXT("false"));
+	}
 
 	// Initialize Pawns in scene
 	for (APawn* sk : Pawns){
 		FString skName = sk->GetActorLabel();
+		UE_LOG(LogTemp, Warning, TEXT("Name of Pawn: %s"), *skName);
 		FHSMSkeletonState SkState = JsonParser->GetSkeletonState(skName);
 		// check if SkState has valid values of position and rotation variables
 		if (SkState.Position != FVector::ZeroVector && SkState.Rotation != FRotator::ZeroRotator)
@@ -933,7 +946,8 @@ void AHSMTracker::RebuildModeBegin()
 			sk->SetActorHiddenInGame(false);
 
 			//Get animation from the jsonparser
-			FString animationName = JsonParser->GetAnimationNames()[0];
+			FString animationName = JsonParser->GetAnimationName(skName);
+			UE_LOG(LogTemp, Warning, TEXT("Name of Animation: %s"), *animationName);
 			//Get the animationn object from the game with the name animationName
 			UAnimSequence* anim = Cast<UAnimSequence>(StaticLoadObject(UAnimSequence::StaticClass(), NULL, *(animationName)));
 			//Check if the animation is valid
@@ -942,8 +956,12 @@ void AHSMTracker::RebuildModeBegin()
 				UActorComponent* animMesh = sk->GetComponentByClass(USkeletalMeshComponent::StaticClass());
 				//Check if the animation mesh is valid
 				if (animMesh != nullptr) {
-					pawnMesh = Cast<USkeletalMeshComponent>(animMesh);
+					/*pawnMesh = Cast<USkeletalMeshComponent>(animMesh);*/
+					USkeletalMeshComponent* pawnMesh = Cast<USkeletalMeshComponent>(animMesh);
 					if (pawnMesh != nullptr) {
+						UE_LOG(LogTemp, Warning, TEXT("%s with Animation: %s es válida"), *skName,*animationName);
+						//add to array
+						pawnMeshArray.Add(pawnMesh);
 						//pawnMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 						pawnMesh->SetAnimation(anim);
 						//Get size of anim
@@ -975,9 +993,11 @@ void AHSMTracker::RebuildModeBegin()
 	// Initialize Cameras in scene
 	for (ACameraActor* cam : CameraActors){
 		FString camName = cam->GetActorLabel();
+		UE_LOG(LogTemp, Warning, TEXT("Name of Camera: %s"), *camName);
 		FHSMCameraState CamState = JsonParser->GetCameraState(camName);
-		if(CameraActors.Num() == 1)
+		if (CameraActors.Num() == 1) 
 			currentCamState = CamState;
+		
 		// check if CamState has valid values of position and rotation variables
 		if (CamState.Position != FVector::ZeroVector && CamState.Rotation != FRotator::ZeroRotator)
 		{
@@ -997,26 +1017,36 @@ void AHSMTracker::RebuildModeBegin()
 
 void AHSMTracker::RebuildModeMain()
 {
-	if (numFrame < JsonParser->GetNumFrames() && numFrame < currentCamState.Transforms.Num() && (JsonParser->GetAnimationNames().Num() == 0 || animLength > numFrame / fps_anim)) { //Check if the animation is finished or if the animation is not valid
+	//se ha eliminado la condición de las transfornaciones ya que hay 5 cámaras y currentcamstate solo tiene valor si hay una cámra ( hay 5 en la escena )
+	//numFrame < currentCamState.Transforms.Num()
+	if (numFrame < JsonParser->GetNumFrames() && (JsonParser->GetAnimationNames().Num() == 0 || animLength > numFrame / fps_anim)) { //Check if the animation is finished or if the animation is not valid
 		int64 currentTime = FDateTime::Now().ToUnixTimestamp();
 		PrintStatusToLog(start_frames[CurrentJsonFile], JsonReadStartTime, LastFrameTime, numFrame, currentTime, JsonParser->GetNumFrames());
 		LastFrameTime = currentTime;
 
 		//currentFrame = JsonParser->GetFrameData(numFrame);
+		
+		//update all meshes positions
+		for (USkeletalMeshComponent* pawnMesh : pawnMeshArray) {
+			if (pawnMesh != nullptr) {
+				float framePos = (float)numFrame / fps_anim;
+				pawnMesh->SetPosition(framePos, false);
+			}
+		}
 
-		if (pawnMesh != nullptr) {
+		/*if (pawnMesh != nullptr) {*/
 			//Check size of the animation of pawnMesh
 			//Set initial position of frame numFrame of the animation taking into account the fps_anim and refresh the mesh
 			//pawnMesh->SetUpdateAnimationInEditor(true);
-			float framePos = (float)numFrame / fps_anim;
-			pawnMesh->SetPosition(framePos, false);
+			/*float framePos = (float)numFrame / fps_anim;
+			pawnMesh->SetPosition(framePos, false);*/
 			//pawnMesh->RefreshBoneTransforms();
 			// print pawnMesh->GetPosition()
 			//UE_LOG(LogTemp, Warning, TEXT("Position of pawnMesh: %f"), pawnMesh->GetPosition());
 			//To solve problems about no updates of the animation in the editor
 			//pawnMesh->TickAnimation(0.0f, false);
 			//pawnMesh->TickPose(0.0f, false);
-		}
+		/*}*/
 
 
 		// Rebuild Pawns animation

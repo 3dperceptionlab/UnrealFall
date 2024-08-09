@@ -1,0 +1,137 @@
+{
+    "name": "Anim Man 1 and Woman 2",
+    "total_frames": 120,
+    "cameras": [
+        {
+            "name": "Camera1",
+            "stereo": 0,
+            "fov": 90,
+            "position":
+                {
+                    "x": 622.6,
+                    "y": 36.76,
+                    "z": 172.92
+                },
+            "rotation":
+                {
+                    "r": -4.16,
+                    "p": -38.427,
+                    "y": -80.77
+                    
+                }
+        },
+        {
+            "name": "Camera2",
+            "stereo": 0,
+            "fov": 90,
+            "position":
+                {
+                    "x": 805.6,
+                    "y": -456.21,
+                    "z": 95.48	
+                },
+            "rotation":
+                {
+                    "r": 0.25,
+                    "p": -20.33,
+                    "y": 132.507
+                    
+                }
+        },
+        {
+            "name": "Camera3",
+            "stereo": 0,
+            "fov": 90,
+            "position":
+                {
+                    "x": 468.1,
+                    "y": 63.43,
+                    "z": 78.06
+                },
+            "rotation":
+                {
+                    "r": 2.27,
+                    "p": -12.93,
+                    "y":  -64.05
+                
+                }
+        },
+        {
+            "name": "Camera4",
+            "stereo": 0,
+            "fov": 90,
+            "position":
+                {
+                    "x": 842.95,
+                    "y": -217.35,
+                    "z": 95.97
+                },
+            "rotation":
+                {
+                    "r": 6.41,
+                    "p": -17.66,
+                    "y":  180.79
+                
+                }
+        },
+        {
+            "name": "Camera5",
+            "stereo": 0,
+            "fov": 90,
+            "position":
+                {
+                    "x": 290.2,
+                    "y": -113.2,
+                    "z": 103.15
+                },
+            "rotation":
+                {
+                    "r": 0.23,
+                    "p": -10.16,
+                    "y":  -6.35				
+                }
+        }
+    ],
+    "avatars":[
+        {
+            "name": "BP_SLFMMetaHuman_man_1",
+            "animation": "/Script/Engine.AnimSequence'/Game/Motion/511_An_elderly_person_experiencing_dizziness_and_loss_of_balance__and_falls_down_to_the_ground.511_An_elderly_person_experiencing_dizziness_and_loss_of_balance__and_falls_down_to_the_ground'",
+            "skeleton": 
+            {
+                "num_bones": 24,
+                "position":
+                {
+                    "x": 613.85,
+                    "y": -221.29,
+                    "z": 92.63
+                },
+                "rotation":
+                {
+                    "r": 0,
+                    "p": 0,
+                    "y": 150
+                }
+            }
+        },
+        {
+            "name": "BP_SLFMMetaHuman_woman_2",
+            "animation": "/Script/Engine.AnimSequence'/Game/Motion/511_An_elderly_person_experiencing_dizziness_and_loss_of_balance__and_falls_down_to_the_ground.511_An_elderly_person_experiencing_dizziness_and_loss_of_balance__and_falls_down_to_the_ground'",	
+            "skeleton": 
+            {
+                "num_bones": 24,
+                "position":
+                {
+                    "x": 713.85,
+                    "y": -221.29,
+                    "z": 92.63
+                },
+                "rotation":
+                {
+                    "r": 0,
+                    "p": 0,
+                    "y": 150
+                }
+            }
+        }
+    ]
+}

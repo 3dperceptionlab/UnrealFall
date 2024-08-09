@@ -69,6 +69,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FString scene_folder;
 
+	/* path of json to be charged */
+	UPROPERTY(EditAnywhere, Category = "JSON to Charge Gaussian Splat")
+	FString scene_charge_directory;
+
+	/* File name od scene to be spawned */
+	UPROPERTY(EditAnywhere, Category = "JSON to Charge Gaussian Splat")
+	FString scene_file_name;
+
 	/* Name prefix for the raw TXT scene files */
 	UPROPERTY(EditAnywhere, Category = Recording)
 	FString scene_file_name_prefix;
@@ -180,7 +188,7 @@ protected:
 	HSMJsonParser* JsonParser;
 	FHSMFrame currentFrame;
 	FHSMCameraState currentCamState;
-	USkeletalMeshComponent* pawnMesh;
+	TArray<USkeletalMeshComponent*> pawnMeshArray;
 	float animLength;
 
 private:
@@ -190,6 +198,8 @@ private:
 	/* Flag for avoiding write header several times when appending to the same file. By default appends will not happen. */
 	bool fileHeaderWritten;
 
+	//Flag to know if scene is already charged
+	bool scene_charged{false};
 
 protected:
 	// Called when the game starts or when spawned
