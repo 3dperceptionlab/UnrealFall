@@ -5,6 +5,8 @@
 HSMJsonParser::HSMJsonParser()
 	: NumFrames(0)
 	, SequenceName("")
+	, scene_file_name("")
+	
 {
 
 }
@@ -19,6 +21,7 @@ bool HSMJsonParser::LoadFile(FString JsonFilePath)
 	//UE_LOG(LogTemp, Warning, TEXT("Jsonfilepath: %s"), *JsonFilePath);
 	bool file_loaded = false;
 	FString JsonRaw;
+	
 	file_loaded = FFileHelper::LoadFileToString(JsonRaw, *JsonFilePath);
 
 	if (file_loaded)
@@ -34,6 +37,9 @@ bool HSMJsonParser::LoadFile(FString JsonFilePath)
 
 			//sequence name
 			SequenceName = JsonObject->GetStringField("name");
+
+			//scene name
+			scene_file_name = JsonObject->GetStringField("scene_name");
 			
 			//sequence numframes
 			NumFrames = JsonObject->GetIntegerField("total_frames");

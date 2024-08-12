@@ -1,5 +1,6 @@
 {
     "name": "Anim Man 1 and Woman 2",
+    "scene_name": "scene_data",
     "total_frames": 120,
     "cameras": [
         {

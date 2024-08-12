@@ -107,6 +107,11 @@ public:
 		return SequenceName;
 	}
 
+	FORCEINLINE FString GetSceneFileName() const
+	{
+		return scene_file_name;
+	}
+
 	FORCEINLINE float GetTotalTime() const
 	{
 		return TotalTime;
@@ -141,6 +146,7 @@ public:
 protected:
 	uint64 NumFrames;
 	FString SequenceName;
+	FString scene_file_name;
 	float TotalTime;
 	float MeanFramerate;
 

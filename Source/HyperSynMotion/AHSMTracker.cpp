@@ -687,7 +687,7 @@ void AHSMTracker::TakeDepthScreenshotFolder(const FString& FullFilename)
 			//Convert TArray64<uint8> to TArray<uint8>
 			const TArray<uint8>& ImgGrayData2 = (const TArray<uint8>&)ImgGrayData;
 			
-			//The above line is not working, 'inicializando': no se puede realizar la conversión de 'const TArray<uint8,FDefaultAllocator64>' a 'const TArray<uint8,FDefaultAllocator> &'
+			//The above line is not working, 'inicializando': no se puede realizar la conversiï¿½n de 'const TArray<uint8,FDefaultAllocator64>' a 'const TArray<uint8,FDefaultAllocator> &'
 			//So, we have to do this: apply conversion from 'const TArray<uint8,FDefaultAllocator64>' to 'const TArray<uint8,FDefaultAllocator> &
 			//TArray<uint8> ImgGrayData;
 
@@ -928,6 +928,9 @@ void AHSMTracker::RebuildModeBegin()
 	// Initialize scene (gaussian splat)
 	if (!scene_charged)
 	{
+		if JsonParser->GetSceneFileName() != ""{
+			scene_file_name = JsonParser->GetSceneFileName();
+		}
 		UE_LOG(LogTemp, Warning, TEXT("SPAWNEANDO LA ESCENA"));
 		scene_charged = JsonParser->LoadSceneFile(scene_charge_directory + scene_folder + "/" + scene_file_name + ".json",this);
 		//UE_LOG(LogTemp, Warning, TEXT("Scene chargeg value is: %s"), scene_charged ? TEXT("true") : TEXT("false"));
@@ -959,7 +962,7 @@ void AHSMTracker::RebuildModeBegin()
 					/*pawnMesh = Cast<USkeletalMeshComponent>(animMesh);*/
 					USkeletalMeshComponent* pawnMesh = Cast<USkeletalMeshComponent>(animMesh);
 					if (pawnMesh != nullptr) {
-						UE_LOG(LogTemp, Warning, TEXT("%s with Animation: %s es válida"), *skName,*animationName);
+						UE_LOG(LogTemp, Warning, TEXT("%s with Animation: %s es vï¿½lida"), *skName,*animationName);
 						//add to array
 						pawnMeshArray.Add(pawnMesh);
 						//pawnMesh->SetAnimationMode(EAnimationMode::AnimationSingleNode);
@@ -1017,7 +1020,7 @@ void AHSMTracker::RebuildModeBegin()
 
 void AHSMTracker::RebuildModeMain()
 {
-	//se ha eliminado la condición de las transfornaciones ya que hay 5 cámaras y currentcamstate solo tiene valor si hay una cámra ( hay 5 en la escena )
+	//se ha eliminado la condiciï¿½n de las transfornaciones ya que hay 5 cï¿½maras y currentcamstate solo tiene valor si hay una cï¿½mra ( hay 5 en la escena )
 	//numFrame < currentCamState.Transforms.Num()
 	if (numFrame < JsonParser->GetNumFrames() && (JsonParser->GetAnimationNames().Num() == 0 || animLength > numFrame / fps_anim)) { //Check if the animation is finished or if the animation is not valid
 		int64 currentTime = FDateTime::Now().ToUnixTimestamp();

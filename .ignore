@@ -1,11 +1,14 @@
 .git
 .vscode
 Content
+DerivedDataCache
 Intermediate
 MotionData
 Platforms
 Saved
+Screenshots
 Scripts
+Plugins/AnimNode/Content
 Plugins/AnimNode/Intermediate
 Plugins/LumaAI_2023_10_26_5.1/Content
 Plugins/LumaAI_2023_10_26_5.1/Intermediate
