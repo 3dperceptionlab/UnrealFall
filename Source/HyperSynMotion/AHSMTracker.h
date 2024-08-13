@@ -57,6 +57,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Recording)
 	TArray<ACameraActor*> CameraActors;
 
+	/* Water material to control fluid simulation speed */
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Recording)
+	//UMaterial* WaterMaterial;
+
+	/* MPC_Water to control fluid simulation speed */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Recording)
+	UMaterialParameterCollection* MPC_Water;
+
 protected:
 	/* Record Mode for TRUE, Playback Mode for FALSE */
 	UPROPERTY(EditAnywhere)
@@ -189,6 +197,9 @@ private:
 
 	/* Flag for avoiding write header several times when appending to the same file. By default appends will not happen. */
 	bool fileHeaderWritten;
+
+	/* Water MPC instance */
+	UMaterialParameterCollectionInstance* MPC_Water_instance;
 
 
 protected:

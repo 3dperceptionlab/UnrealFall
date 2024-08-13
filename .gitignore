@@ -101,3 +101,8 @@ Content/MetaHumans/man_1/Face/man_1_FaceMesh.uasset
 Content/MetaHumans/man_2/Face/man_2_FaceMesh.uasset
 Content/MetaHumans/young_boy_1/Face/young_boy_1_FaceMesh.uasset
 Content/MetaHumans/young_girl_1/Face/young_girl_1_FaceMesh.uasset
+Content/MetaHumans/elderly_woman_3/Face/elderly_woman_3_FaceMesh.uasset
+Content/MetaHumans/elderly_man_3/Face/elderly_man_3_FaceMesh.uasset
+
+# BeachAssets
+Content/Scenes/Beach/Assets/*

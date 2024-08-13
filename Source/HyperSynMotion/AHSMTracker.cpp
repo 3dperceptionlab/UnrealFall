@@ -990,6 +990,13 @@ void AHSMTracker::RebuildModeBegin()
 	
 	}
 
+	// Initialize Water fluid simulation in scene
+	MPC_Water_instance = GetWorld()->GetParameterCollectionInstance(MPC_Water);
+	if (MPC_Water_instance) {
+		MPC_Water_instance->SetScalarParameterValue("ManualTime", 0);
+		MPC_Water_instance->SetScalarParameterValue("FreezeTime", 1);
+	}
+
 	if (JsonParser->GetNumFrames() > 0)
 	{
 		FTimerHandle TimerHandle;
@@ -1029,6 +1036,14 @@ void AHSMTracker::RebuildModeMain()
 			FString skName = sk->GetActorLabel();
 
 		}
+
+		// Rebuild Water simulation
+		//WaterMaterial->SetScalarParameterValueEditorOnly("ManualTime", currentTime);
+		
+		if (MPC_Water_instance) {
+			MPC_Water_instance->SetScalarParameterValue("ManualTime", (float)numFrame / fps_anim);
+		}
+		
 
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateUObject(this, &AHSMTracker::RebuildModeMain_Camera), place_cameras_delay, false);
